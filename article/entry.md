@@ -35,6 +35,9 @@
 | Infra | データベースからユーザー名を取得する     | Get            |
 
 
+![レイヤードアーキテクチャ](./images/layred_architecture.jpg)
+
+
 ## レイヤードアーキテクチャにおける密結合なコードの紹介
 
 ソフトウェアにおける密結合な状態とは、あるモジュールが他のモジュールに強く依存しており、どちらかを変更するともう一方も変更する必要がある状態のことを指します。
@@ -109,10 +112,15 @@ GetUserByIdがGetメソッドの抽象に依存することで、以下のよう
 さらに、Dependency Injectionを行うことで、UserRepositorierインターフェイスの実装を満たせば、どのような型でも受けつけられるようになります。
 例えば、利用するデータベースがSQLからElasticsearchへ変更した場合でも、UserRepositorierインターフェイスが持つGetメソッドのシグネチャを満たすように実装すれば、Usecase層のGetUserByIdメソッドの変更は必要ありません。
 
+![疎結合](./images/loose_coupling.jpg)
+
+
 ここで、各層の依存の向きを確認してみましょう。
 疎結合なコードに修正したことで、依存の向きが変わっていることがわかります。
 GetUserByIdは同じくUsecase層で定義されているUserRepositorierインターフェイスのGetメソッドを呼び出し、infra層ではUserRepositorierインターフェイスを満たすように実装されています。
 つまり、2つのモジュールが抽象(UserRepositorierインターフェイス)に依存するようになり、依存の向きがinfra層→usecase層となりました。
+
+![クリーンアーキテクチャ](./images/clean_architecture.jpg)
 
 // TODO: クリーンアーキテクチャへ繋げる流れを再考する
 Presentation層・infra層からUsecase層に向けて依存の向きが変わったことで、Usecase層が安定度の高い層となり、Presentation層・infra層の変更の影響を受けにいくようになりました。
