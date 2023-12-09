@@ -189,9 +189,34 @@ type UserDTO struct {
 }
 
 ```
-
+また、Infra層は`sqlHandler`構造体が`UserRepositorier`インターフェイスの実装を満たすようにします。
+こうすることでsqlHandler型はGetUserByIdメソッドのrepo引数(UserRepositorier型)に代入することができるようになります。
 
 ```diff:Infra層
+type User struct {
+	Id   int
+	Name string
+}
+
++ type sqlHandler struct {
++ 	db *sql.DB
++ }
+
++ func NewSqlHandler(db *sql.DB) *sqlHandler {
++ 	return &sqlHandler{db: db}
++ }
+
+- func Get(ctx context.Context, userId int, db *sql.DB) (User, error) {
++ func (s *sqlHandler) Get(ctx context.Context, userId int) (User, error) {
+	u := User{}
+
+	err := s.db.QueryRowContext(ctx, "SELECT * FROM users WHERE id = ?", userId).Scan(&u.Id, &u.Name)
+	if err != nil {
+		// error handling
+	}
+	return u, nil
+}
+
 ```
 
 ## 疎結合にすると何が良いのか
@@ -203,9 +228,9 @@ GetUserByIdがGetメソッドの抽象に依存することで、以下のよう
 Getメソッドの具象を変更したとしても、Usecase層への影響はありません。 つまり、ビジネスロジックを定義している重要なUsecase層が安定度の高い層になり、より変更に強いアプリケーションになります。
 
 Dependency Injectionを行うことで、UserRepositorierインターフェイスの実装を満たせば、どのような型でも受けつけられるようになります。
-例えば、利用するデータベースがSQLからElasticsearchへ変更した場合でも、UserRepositorierインターフェイスが持つGetメソッドのシグネチャを満たすように実装すれば、Usecase層のGetUserByIdメソッドの変更は必要ありません。
+例えば、利用するデータベースがMySQLからElasticsearchへ変更した場合でも、UserRepositorierインターフェイスが持つGetメソッドのシグネチャを満たすように実装すれば、Usecase層のGetUserByIdメソッドの変更は必要ありません。
 
-![疎結合](./images/loose_coupling.jpg)
+![疎結合](./images/loose_coupling.png)
 
 
 ### 2. テストがしやすいコードになる
